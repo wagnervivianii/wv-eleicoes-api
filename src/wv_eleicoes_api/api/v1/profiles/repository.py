@@ -5,6 +5,7 @@ from sqlalchemy.engine import RowMapping
 
 from wv_eleicoes_api.api.v1.profiles.schemas import (
     CandidacySummary,
+    ElectoralHistoryResponse,
     ExternalIdentifierSummary,
     OfficeSummary,
     PartySummary,
@@ -22,6 +23,14 @@ PERSON_QUERY = text(
         social_name,
         birth_date,
         birth_uf
+    FROM core.person
+    WHERE id = :person_id
+    """
+)
+
+PERSON_EXISTS_QUERY = text(
+    """
+    SELECT id
     FROM core.person
     WHERE id = :person_id
     """
@@ -139,6 +148,31 @@ def fetch_person_profile(person_id: int) -> PersonProfileResponse | None:
                 _identifier_from_row(row)
                 for row in identifier_rows
             ],
+            candidacies=[
+                _candidacy_from_row(row)
+                for row in candidacy_rows
+            ],
+        )
+
+
+def fetch_electoral_history(person_id: int) -> ElectoralHistoryResponse | None:
+    """Fetch the published candidacy timeline for one stable political person."""
+
+    with get_engine().connect() as connection:
+        existing_person_id = connection.scalar(
+            PERSON_EXISTS_QUERY,
+            {"person_id": person_id},
+        )
+        if existing_person_id is None:
+            return None
+
+        candidacy_rows = connection.execute(
+            CANDIDACIES_QUERY,
+            {"person_id": person_id},
+        ).mappings()
+
+        return ElectoralHistoryResponse(
+            person_id=int(existing_person_id),
             candidacies=[
                 _candidacy_from_row(row)
                 for row in candidacy_rows

@@ -1,4 +1,4 @@
-"""Public response contracts for the Profile 360 endpoint."""
+"""Public response contracts for person-centered political endpoints."""
 
 from datetime import date
 
@@ -51,4 +51,11 @@ class CandidacySummary(BaseModel):
 class PersonProfileResponse(BaseModel):
     person: PersonSummary
     external_identifiers: list[ExternalIdentifierSummary]
+    candidacies: list[CandidacySummary]
+
+
+class ElectoralHistoryResponse(BaseModel):
+    """Chronological candidacy contract for a stable political person."""
+
+    person_id: int
     candidacies: list[CandidacySummary]

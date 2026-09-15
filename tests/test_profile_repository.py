@@ -1,5 +1,6 @@
 from wv_eleicoes_api.api.v1.profiles.repository import (
     CANDIDACIES_QUERY,
+    PERSON_EXISTS_QUERY,
     PERSON_QUERY,
     PUBLIC_IDENTIFIERS_QUERY,
 )
@@ -14,6 +15,7 @@ def test_profile_queries_use_only_public_read_models() -> None:
         normalized(statement)
         for statement in (
             PERSON_QUERY,
+            PERSON_EXISTS_QUERY,
             PUBLIC_IDENTIFIERS_QUERY,
             CANDIDACIES_QUERY,
         )
@@ -41,3 +43,10 @@ def test_tse_candidacy_identifier_is_scoped_by_election() -> None:
     assert "identifier.identifier_value = candidate.candidacy_sequence" in sql
     assert "'election:' || candidate.election_year::text" in sql
     assert "|| ':' || candidate.election_code" in sql
+
+
+def test_electoral_history_is_ordered_newest_first() -> None:
+    sql = normalized(CANDIDACIES_QUERY)
+
+    assert "candidate.election_year desc" in sql
+    assert "candidate.election_round desc nulls last" in sql

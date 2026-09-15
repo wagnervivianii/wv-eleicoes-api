@@ -31,6 +31,20 @@ The endpoint reads:
 The API never reads CPF, voter-registration data, `raw.*` or `audit.*` for this endpoint.
 The TSE candidacy sequence remains a candidacy identifier, not the identity of the person.
 
+## Electoral history v1
+
+`GET /api/v1/people/{person_id}/electoral-history` exposes the candidacy timeline for one
+stable political person without requiring the frontend to consume the complete Profile 360.
+
+The contract returns `person_id` plus published candidacies ordered from the newest election
+to the oldest. Each candidacy preserves election, round, UF, electoral unit, office, ballot,
+party and candidacy status fields from the approved longitudinal `analytics.candidate` read
+model.
+
+A person that exists but has no published candidacies receives `200` with an empty
+`candidacies` list. A nonexistent person receives `404`, and non-positive identifiers receive
+`422` from the path contract.
+
 ## Python
 
 Python 3.12+.
@@ -58,6 +72,7 @@ uvicorn wv_eleicoes_api.main:app --reload --host 127.0.0.1 --port 8000
 - `GET /health/ready` — readiness; checks a read-only PostgreSQL connection with `SELECT 1`.
 - `GET /api/v1` — versioned API root.
 - `GET /api/v1/people/{person_id}/profile` — public Profile 360 v1.
+- `GET /api/v1/people/{person_id}/electoral-history` — public longitudinal candidacy history.
 
 Every HTTP response receives `X-Request-ID`. A valid incoming `X-Request-ID` is preserved; otherwise
 the API generates a UUID4 request ID.
