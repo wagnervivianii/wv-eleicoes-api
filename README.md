@@ -17,8 +17,19 @@ only approved read models through the PostgreSQL role `wv_eleicoes_api`.
 - basic request logging without secrets;
 - pytest, Ruff and MyPy configuration.
 
-No candidate/person business endpoint is implemented in this first unit. Identity (`core.person`)
-and Profile 360 belong to the next functional units in the same chat contract.
+## Profile 360 v1
+
+`GET /api/v1/people/{person_id}/profile` exposes the first public person-centered read model.
+
+The endpoint reads:
+
+- `core.person` for the stable internal political-person identity;
+- public rows from `core.person_external_identifier`;
+- `analytics.candidate` for published candidacy data linked through the scoped
+  TSE `candidacy_sequence`.
+
+The API never reads CPF, voter-registration data, `raw.*` or `audit.*` for this endpoint.
+The TSE candidacy sequence remains a candidacy identifier, not the identity of the person.
 
 ## Python
 
@@ -46,6 +57,7 @@ uvicorn wv_eleicoes_api.main:app --reload --host 127.0.0.1 --port 8000
 - `GET /health/live` — process liveness; does not require PostgreSQL.
 - `GET /health/ready` — readiness; checks a read-only PostgreSQL connection with `SELECT 1`.
 - `GET /api/v1` — versioned API root.
+- `GET /api/v1/people/{person_id}/profile` — public Profile 360 v1.
 
 Every HTTP response receives `X-Request-ID`. A valid incoming `X-Request-ID` is preserved; otherwise
 the API generates a UUID4 request ID.
@@ -61,6 +73,8 @@ python -m pytest
 
 ## Database safety
 
-The API must use the existing least-privilege role `wv_eleicoes_api`. In addition to PostgreSQL ACLs,
-the connection requests `default_transaction_read_only=on` and a bounded `statement_timeout`.
+The API must use the existing least-privilege role `wv_eleicoes_api`.
+In addition to PostgreSQL ACLs,
+the connection requests `default_transaction_read_only=on` and a bounded
+`statement_timeout`.
 Application code in this repository must not run migrations or write to RAW/audit layers.

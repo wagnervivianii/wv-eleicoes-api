@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from wv_eleicoes_api import __version__
+from wv_eleicoes_api.api.v1.profiles.router import router as profiles_router
 
 router = APIRouter(tags=["api"])
 
@@ -19,3 +20,6 @@ def api_root() -> ApiRootResponse:
     """Expose the stable versioned API entry point."""
 
     return ApiRootResponse(name="wv-eleicoes-api", version=__version__, status="ok")
+
+
+router.include_router(profiles_router)
