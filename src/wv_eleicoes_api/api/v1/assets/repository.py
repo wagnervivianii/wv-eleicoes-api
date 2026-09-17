@@ -145,7 +145,7 @@ ASSET_ITEMS_QUERY = text(
         declared_value,
         declared_value_status,
         asset_updated_at
-    FROM core.candidate_asset
+    FROM analytics.candidate_asset_item
     WHERE person_id = :person_id
       AND election_year = :election_year
       AND election_code = :election_code

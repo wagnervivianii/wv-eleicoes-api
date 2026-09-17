@@ -30,7 +30,8 @@ def test_asset_queries_use_only_approved_relations() -> None:
     sql = all_asset_sql()
 
     assert "core.person" in sql
-    assert "core.candidate_asset" in sql
+    assert "analytics.candidate_asset_item" in sql
+    assert "core.candidate_asset" not in sql
     assert "analytics.candidate_asset_summary" in sql
     assert "analytics.candidate_asset_type" in sql
     assert "analytics.person_asset_evolution" in sql
@@ -76,6 +77,15 @@ def test_evolution_is_consumed_directly_without_recalculation() -> None:
     assert "previous_declared_value_signed_total" in sql
     assert "declared_value_nominal_change" in sql
     assert "declared_value_change_pct" in sql
+
+
+def test_asset_items_use_published_serving_relation() -> None:
+    sql = normalized(ASSET_ITEMS_QUERY)
+
+    assert "from analytics.candidate_asset_item" in sql
+    assert "core.candidate_asset" not in sql
+    assert "raw." not in sql
+    assert "audit." not in sql
 
 
 def test_declaration_detail_uses_complete_candidacy_scope_key() -> None:
