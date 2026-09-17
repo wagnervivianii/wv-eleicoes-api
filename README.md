@@ -93,3 +93,23 @@ In addition to PostgreSQL ACLs,
 the connection requests `default_transaction_read_only=on` and a bounded
 `statement_timeout`.
 Application code in this repository must not run migrations or write to RAW/audit layers.
+
+## Declared assets v1
+
+The declared-assets module exposes only TSE-declared values already published through the
+approved CORE/ANALYTICS contracts. Monetary fields use Python `Decimal`; source signs are
+preserved without `ABS`, zero clamps or API-side normalization.
+
+Endpoints:
+
+- `GET /api/v1/people/{person_id}/assets` — candidacy-scoped declaration history;
+- `GET /api/v1/people/{person_id}/assets/evolution` — direct projection of
+  `analytics.person_asset_evolution`;
+- `GET /api/v1/people/{person_id}/assets/declarations/{election_year}/{election_code}/{candidacy_sequence}`
+  — one declaration with summary, type composition and individual items.
+
+The declaration-detail key intentionally includes election year, TSE election code and
+candidacy sequence because a stable person can have multiple candidacy-scoped snapshots in
+the same year. The assets module reads only `core.person`, `core.candidate_asset`,
+`analytics.candidate_asset_summary`, `analytics.candidate_asset_type` and
+`analytics.person_asset_evolution`.

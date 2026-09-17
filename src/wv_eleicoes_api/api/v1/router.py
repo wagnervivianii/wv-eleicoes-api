@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from wv_eleicoes_api import __version__
+from wv_eleicoes_api.api.v1.assets.router import router as assets_router
 from wv_eleicoes_api.api.v1.profiles.router import router as profiles_router
 
 router = APIRouter(tags=["api"])
@@ -23,3 +24,4 @@ def api_root() -> ApiRootResponse:
 
 
 router.include_router(profiles_router)
+router.include_router(assets_router)
